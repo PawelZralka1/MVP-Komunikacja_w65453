@@ -1,0 +1,34 @@
+﻿@{
+    ViewData["Title"] = "Strona główna";
+}
+
+<div class="jumbotron text-center">
+    <h1 class="display-4">MVP - System rekomendacji gier komputerowych</h1>
+    <p class="lead">Jest to szkielet aplikacji przygotowany na przedmiot Komunikacja Człowiek-Komputer.</p>
+    <hr class="my-4">
+    <p>MVP aplikacji oferuje następujące funkcjonalności:</p>
+    <ol class="numbered-list">
+        <li>Pobranie kolekcji gier z API IGDB.</li>
+        <li>Wyszukiwanie gier.</li>
+        <li>Tworzenie i zarządzanie osobistą listą gier.</li>
+        <li>Przeglądanie szczegółowych danych o każdej grze.</li>
+        <li>Logowanie, rejestracja i zarządzanie swoim kontem.</li>
+    </ol>
+</div>
+
+@section Styles {
+    <style>
+        .numbered-list {
+            text-align: left;
+            display: inline-block;
+            margin: 1rem 0;
+            padding-left: 20px;
+            list-style: decimal;
+        }
+
+        .numbered-list li {
+            font-size: 1.1rem;
+            padding: 0.5rem 0;
+        }
+    </style>
+}

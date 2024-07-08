@@ -1,0 +1,38 @@
+﻿@model Game
+
+<h1>@Model.Name</h1>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<div class="row">
+    <div class="col-md-4">
+        @if (Model.Cover != null && !string.IsNullOrEmpty(Model.Cover.Url))
+        {
+            <img src="https:@Model.Cover.Url" alt="@Model.Name" class="img-fluid" />
+        }
+    </div>
+    <div class="col-md-8">
+        <h2>@Model.Name</h2>
+        <p><strong>Rating:</strong> @(Model.Rating.HasValue ? $"{Model.Rating:F1}" : "N/A")</p>
+        <p><strong>Release Date:</strong> @Model.FirstReleaseDate.ToString("d")</p>
+        <p><strong>Genres:</strong> @(Model.Genres != null ? string.Join(", ", Model.Genres.Select(g => g.Name)) : "N/A")</p>
+        <p><strong>Platforms:</strong> @(Model.Platforms != null ? string.Join(", ", Model.Platforms.Select(p => p.Name)) : "N/A")</p>
+        <h3>Summary</h3>
+        <p>@Model.Summary</p>
+
+        @if (User.Identity.IsAuthenticated && !ViewBag.GameInUserList)
+        {
+            <form asp-action="AddToUserGames" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="hidden" name="currentFilter" value="@ViewBag.CurrentFilter" />
+                <input type="hidden" name="page" value="@ViewBag.CurrentPage" />
+                <button type="submit" class="btn btn-primary mt-3">Add to My Games</button>
+            </form>
+        }
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>

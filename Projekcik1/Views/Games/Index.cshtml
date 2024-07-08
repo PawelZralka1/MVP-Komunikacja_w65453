@@ -1,0 +1,163 @@
+﻿@model PaginatedList<Game>
+
+<h1>Games List</h1>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="Search games...">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
+
+<p>Total games: @Model.TotalCount</p>
+
+@if (!Model.Any())
+{
+    <p>No games found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th style="width: 120px;">Cover</th>
+                <th>Name</th>
+                <th>Rating</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="cover-container">
+                            @if (game.Cover != null && !string.IsNullOrEmpty(game.Cover.Url))
+                            {
+                                <img src="https:@game.Cover.Url" alt="@game.Name" class="game-cover" />
+                            }
+                            else
+                            {
+                                <div class="no-cover">No Cover</div>
+                            }
+                        </div>
+                    </td>
+                    <td>@game.Name</td>
+                    <td>@(game.Rating.HasValue ? $"{game.Rating:F1}" : "N/A")</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="showGameDetails(@game.Id)">Details</button>
+                        <form asp-action="AddToUserGames" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@game.Id" />
+                            <input type="hidden" name="currentFilter" value="@ViewBag.CurrentFilter" />
+                            <input type="hidden" name="page" value="@Model.PageIndex" />
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <nav aria-label="Page navigation">
+        <div class="d-flex justify-content-center">
+            <ul class="pagination">
+                @if (Model.PageIndex > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = 1, searchString = ViewBag.CurrentFilter })">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageIndex - 1, searchString = ViewBag.CurrentFilter })">Previous</a>
+                    </li>
+                }
+
+                @foreach (var i in Model.GetPageRange(Model.TotalPages, Model.PageIndex))
+                {
+                    <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = i, searchString = ViewBag.CurrentFilter })">@i</a>
+                    </li>
+                }
+
+                @if (Model.PageIndex < Model.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageIndex + 1, searchString = ViewBag.CurrentFilter })">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.TotalPages, searchString = ViewBag.CurrentFilter })">Last</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </nav>
+}
+
+<!-- Modal -->
+<div class="modal fade" id="gameDetailsModal" tabindex="-1" aria-labelledby="gameDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gameDetailsModalLabel">Game Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="gameDetailsContent">
+                <!-- Game details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showGameDetails(gameId) {
+            $.ajax({
+                url: '@Url.Action("GetGameDetails", "Games")/' + gameId,
+                type: 'GET',
+                success: function (result) {
+                    $('#gameDetailsContent').html(result);
+                    var myModal = new bootstrap.Modal(document.getElementById('gameDetailsModal'));
+                    myModal.show();
+                },
+                error: function () {
+                    alert('Error loading game details.');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var myModal = document.getElementById('gameDetailsModal');
+            myModal.addEventListener('hidden.bs.modal', function () {
+                $('#gameDetailsContent').html('');
+            });
+        });
+    </script>
+}
+
+<style>
+    .cover-container {
+        width: 100px;
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+
+    .game-cover {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .no-cover {
+        color: #6c757d;
+        text-align: center;
+        font-size: 0.8rem;
+    }
+</style>
